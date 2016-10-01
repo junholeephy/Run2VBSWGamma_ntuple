@@ -20,6 +20,9 @@ elif not(runOnMC):
 hltFiltersProcessName = 'RECO'
 if runOnMC:
    hltFiltersProcessName = 'PAT' #'RECO'
+reducedConversionsName = 'RECO'
+if runOnMC:
+   reducedConversionsName= 'PAT' #'RECO'
 
 process.load("VAJets.PKUCommon.goodMuons_cff")
 process.load("VAJets.PKUCommon.goodElectrons_cff")
@@ -65,20 +68,27 @@ process.leptonSequence = cms.Sequence(process.muSequence +
 process.jetSequence = cms.Sequence(process.NJetsSequence)
 
 
+process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+process.load("RecoMET.METFilters.BadChargedCandidateFilter_cfi")
+process.BadPFMuonFilter.muons = cms.InputTag("slimmedMuons")
+process.BadPFMuonFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+process.BadChargedCandidateFilter.muons = cms.InputTag("slimmedMuons")
+process.BadChargedCandidateFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+process.metfilterSequence = cms.Sequence(process.BadPFMuonFilter+process.BadChargedCandidateFilter)
 #begin------------JEC on the fly--------
 if runOnMC:
    jecLevelsAK4chs = [
-                               'Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt',#'Spring16_25nsV1_MC_L1FastJet_AK4PFchs.txt',   # 'Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt',
-                               'Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt',#'Spring16_25nsV1_MC_L2Relative_AK4PFchs.txt',   # 'Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt',
-                               'Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt'#'Spring16_25nsV1_MC_L3Absolute_AK4PFchs.txt'   # 'Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt'
-     ]
+          'Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt',
+          'Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt',
+          'Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt'
+    ]
 else:
    jecLevelsAK4chs = [
-                                'Spring16_25nsV6_DATA_L1FastJet_AK4PFchs.txt',#'Spring16_25nsV3_DATA_L1FastJet_AK4PFchs.txt',   #'Fall15_25nsV2_DATA_L1FastJet_AK4PFchs.txt',
-                                'Spring16_25nsV6_DATA_L2Relative_AK4PFchs.txt',#'Spring16_25nsV3_DATA_L2Relative_AK4PFchs.txt',   #'Fall15_25nsV2_DATA_L2Relative_AK4PFchs.txt',
-                                'Spring16_25nsV6_DATA_L3Absolute_AK4PFchs.txt',#'Spring16_25nsV3_DATA_L3Absolute_AK4PFchs.txt',   #'Fall15_25nsV2_DATA_L3Absolute_AK4PFchs.txt',
-                                'Spring16_25nsV6_DATA_L2L3Residual_AK4PFchs.txt'#'Spring16_25nsV3_DATA_L2L3Residual_AK4PFchs.txt'   #'Fall15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt'
-     ] 
+          'Spring16_25nsV6_DATA_L1FastJet_AK4PFchs.txt',
+          'Spring16_25nsV6_DATA_L2Relative_AK4PFchs.txt',
+          'Spring16_25nsV6_DATA_L3Absolute_AK4PFchs.txt',
+          'Spring16_25nsV6_DATA_L2L3Residual_AK4PFchs.txt'
+    ]
 #end------------JEC on the fly--------
 
  
@@ -108,7 +118,7 @@ process.treeDumper = cms.EDAnalyzer("PKUTreeMaker",
                                     electronIDs = cms.InputTag("cutBasedElectronID-Spring15-25ns-V1-standalone-medium"),
                                     looseelectronSrc = cms.InputTag("vetoElectrons"),
                                     electrons = cms.InputTag("slimmedElectrons"),
-                                    conversions = cms.InputTag("reducedEgamma","reducedConversions","PAT"),
+                                    conversions = cms.InputTag("reducedEgamma","reducedConversions",reducedConversionsName),
                                     beamSpot = cms.InputTag("offlineBeamSpot","","RECO"),
                                     loosemuonSrc = cms.InputTag("looseMuons"),
                                     hltToken    = cms.InputTag("TriggerResults","","HLT"),
@@ -120,31 +130,27 @@ process.treeDumper = cms.EDAnalyzer("PKUTreeMaker",
 				    noiseFilter = cms.InputTag('TriggerResults','', hltFiltersProcessName),
 				    noiseFilterSelection_HBHENoiseFilter = cms.string('Flag_HBHENoiseFilter'),
                                     noiseFilterSelection_HBHENoiseIsoFilter = cms.string("Flag_HBHENoiseIsoFilter"),
-				  #  noiseFilterSelection_CSCTightHaloFilter = cms.string('Flag_CSCTightHalo2015Filter'),
 				    noiseFilterSelection_globalTightHaloFilter = cms.string('Flag_globalTightHalo2016Filter'),
                                     noiseFilterSelection_EcalDeadCellTriggerPrimitiveFilter = cms.string('Flag_EcalDeadCellTriggerPrimitiveFilter'),
 				    noiseFilterSelection_goodVertices = cms.string('Flag_goodVertices'),
 				    noiseFilterSelection_eeBadScFilter = cms.string('Flag_eeBadScFilter'),
-				   #noiseFilterSelection_muonBadTrackFilter = cms.string('Flag_muonBadTrackFilter'),
-				   #noiseFilterSelection_chargedHadronTrackResolutionFilter = cms.string('Flag_chargedHadronTrackResolutionFilter'), 
-				    #noiseFilterSelection_badChargedhadron = cms.string('badChargedhadron'),	
+                                    noiseFilterSelection_badMuon = cms.InputTag('BadPFMuonFilter'),
+                                    noiseFilterSelection_badChargedHadron = cms.InputTag('BadChargedCandidateFilter'),
                                     full5x5SigmaIEtaIEtaMap   = cms.InputTag("photonIDValueMapProducer:phoFull5x5SigmaIEtaIEta"),
                                     phoChargedIsolation = cms.InputTag("photonIDValueMapProducer:phoChargedIsolation"),
                                     phoNeutralHadronIsolation = cms.InputTag("photonIDValueMapProducer:phoNeutralHadronIsolation"),
                                     phoPhotonIsolation = cms.InputTag("photonIDValueMapProducer:phoPhotonIsolation"),
-                                    effAreaChHadFile = cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
-                                    effAreaNeuHadFile= cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
-                                    effAreaPhoFile   = cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
+                                    effAreaChHadFile = cms.FileInPath("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfChargedHadrons_25ns_NULLcorrection.txt"),
+                                    effAreaNeuHadFile= cms.FileInPath("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfNeutralHadrons_25ns_90percentBased.txt"),
+                                    effAreaPhoFile   = cms.FileInPath("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfPhotons_25ns_90percentBased.txt")
                                     )
 
 
 process.analysis = cms.Path(
 #                            process.goodOfflinePrimaryVertex +
-#			    process.HBHENoiseFilterResultProducer+ #produces HBHE baseline bools
-#			    process.ApplyBaselineHBHENoiseFilter+  #reject events based 
-#			    process.ApplyBaselineHBHEIsoNoiseFilter+   #reject events based  < 10e-3 mistake rate 
                             process.leptonSequence +
                             process.jetSequence +
+                            process.metfilterSequence +
 #                           process.photonSequence +
                             process.photonIDValueMapProducer*process.treeDumper)
 
