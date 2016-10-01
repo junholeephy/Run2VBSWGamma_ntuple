@@ -118,10 +118,12 @@ private:
   edm::Handle< edm::TriggerResults> 			     noiseFilterBits_;
   std::string HBHENoiseFilter_Selector_;
   std::string HBHENoiseIsoFilter_Selector_;
-  std::string CSCHaloNoiseFilter_Selector_;
   std::string ECALDeadCellNoiseFilter_Selector_;
   std::string GoodVtxNoiseFilter_Selector_;
   std::string EEBadScNoiseFilter_Selector_;
+  std::string globalTightHaloFilter_Selector_;
+  edm::EDGetTokenT<bool>  badMuon_Selector_;
+  edm::EDGetTokenT<bool>  badChargedHadron_Selector_;
 
   edm::EDGetTokenT<edm::ValueMap<float> > full5x5SigmaIEtaIEtaMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_;
@@ -144,10 +146,12 @@ private:
   int     nBX;
   double ptVlep, yVlep, phiVlep, massVlep;
   double Mla, Mla2, Mva;
+  double Mla_f, Mla2_f, Mva_f;
   double ptlep1, etalep1, philep1;
   double ptlep2, etalep2, philep2;
   int  lep, nlooseeles,nloosemus;
   double met, metPhi, j1metPhi, j2metPhi;
+  double j1metPhi_f, j2metPhi_f;
   //Met JEC
   double METraw_et, METraw_phi, METraw_sumEt;
   double genMET, MET_et, MET_phi, MET_sumEt, MET_corrPx, MET_corrPy;
@@ -165,10 +169,15 @@ private:
   bool   photon_pev[6],photon_pevnew[6],photon_ppsv[6],photon_iseb[6],photon_isee[6];
   double photon_hoe[6],photon_sieie[6],photon_sieie2[6],photon_chiso[6],photon_nhiso[6],photon_phoiso[6],photon_drla[6],photon_drla2[6],photon_mla[6],photon_mla2[6],photon_mva[6];
   int      photon_istrue[6], photon_isprompt[6];
+
   double photonet, photoneta, photonphi, photone;
+  double photonet_f, photoneta_f, photonphi_f, photone_f;
   double photonsieie, photonphoiso, photonchiso, photonnhiso;
+  double photonsieie_f, photonphoiso_f, photonchiso_f, photonnhiso_f;
   int iphoton;
+  int iphoton_f;
   double drla,drla2;
+  double drla_f,drla2_f;
   bool passEleVeto, passEleVetonew, passPixelSeedVeto;
   //Photon gen match
   int   isTrue_;
@@ -177,9 +186,13 @@ private:
   double dR_;
   //Jets
   double jet1pt, jet1eta, jet1phi, jet1e, jet1csv, jet1icsv;
+  double jet1pt_f, jet1eta_f, jet1phi_f, jet1e_f, jet1csv_f, jet1icsv_f;
   double jet2pt, jet2eta, jet2phi, jet2e, jet2csv, jet2icsv;
-  double drj1a, drj2a, drj1l, drj2l,drj1l2,drj2l2;
+  double jet2pt_f, jet2eta_f, jet2phi_f, jet2e_f, jet2csv_f, jet2icsv_f;
+  double drj1a, drj2a, drj1l, drj2l, drj1l2,drj2l2;
+  double drj1a_f, drj2a_f, drj1l_f, drj2l_f, drj1l2_f, drj2l2_f;
   double Mjj, deltaeta, zepp;
+  double Mjj_f, deltaeta_f, zepp_f; 
    
   void setDummyValues();
     
@@ -209,10 +222,12 @@ private:
 // filter
   bool passFilter_HBHE_                   ;
   bool passFilter_HBHEIso_                ;
-  bool passFilter_CSCHalo_                ;
+  bool passFilter_globalTightHalo_ ;
   bool passFilter_ECALDeadCell_           ;
   bool passFilter_GoodVtx_                ;
   bool passFilter_EEBadSc_                ;
+  bool passFilter_badMuon_                ;
+  bool passFilter_badChargedHadron_       ;
 
   edm::EDGetTokenT<GenEventInfoProduct> GenToken_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PUToken_;
@@ -309,11 +324,12 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
    noiseFilterToken_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("noiseFilter"));
    HBHENoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_HBHENoiseFilter");
    HBHENoiseIsoFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_HBHENoiseIsoFilter");  
-   CSCHaloNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_CSCTightHaloFilter");
+   globalTightHaloFilter_Selector_ = iConfig.getParameter<std::string> ("noiseFilterSelection_globalTightHaloFilter"); 
    ECALDeadCellNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_EcalDeadCellTriggerPrimitiveFilter");
    GoodVtxNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_goodVertices");
    EEBadScNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_eeBadScFilter");
-
+   badMuon_Selector_ =  consumes<bool>(iConfig.getParameter<edm::InputTag> ("noiseFilterSelection_badMuon"));
+   badChargedHadron_Selector_ =  consumes<bool>(iConfig.getParameter<edm::InputTag> ("noiseFilterSelection_badChargedHadron"));
    full5x5SigmaIEtaIEtaMapToken_=(consumes <edm::ValueMap<float> >
 				(iConfig.getParameter<edm::InputTag>("full5x5SigmaIEtaIEtaMap")));
    phoChargedIsolationToken_=(consumes <edm::ValueMap<float> >
@@ -342,8 +358,11 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("phiVlep"         ,&phiVlep        ,"phiVlep/D"        );
   outTree_->Branch("massVlep"        ,&massVlep       ,"massVlep/D"       );
   outTree_->Branch("Mla"          ,&Mla         ,"Mla/D"         );
+  outTree_->Branch("Mla_f"          ,&Mla_f         ,"Mla_f/D"         );
   outTree_->Branch("Mla2"          ,&Mla2         ,"Mla2/D"         );
+  outTree_->Branch("Mla2_f"          ,&Mla2_f         ,"Mla2_f/D"         );
   outTree_->Branch("Mva"          ,&Mva         ,"Mva/D"         );
+  outTree_->Branch("Mva_f"          ,&Mva_f         ,"Mva_f/D"         );
   outTree_->Branch("nlooseeles"          ,&nlooseeles         ,"nlooseeles/I"         );
   outTree_->Branch("nloosemus"          ,&nloosemus         ,"nloosemus/I"         );
   outTree_->Branch("genphoton_pt"        , genphoton_pt       ,"genphoton_pt[6]/D"       );
@@ -384,16 +403,27 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("passPixelSeedVeto"        , &passPixelSeedVeto       ,"passPixelSeedVeto/O"       );
 
   outTree_->Branch("photonet"          ,&photonet         ,"photonet/D"         );
+  outTree_->Branch("photonet_f"          ,&photonet_f         ,"photonet_f/D"         );
   outTree_->Branch("photoneta"          ,&photoneta         ,"photoneta/D"         );
+  outTree_->Branch("photoneta_f"          ,&photoneta_f         ,"photoneta_f/D"         );
   outTree_->Branch("photonphi"          ,&photonphi         ,"photonphi/D"         );
+  outTree_->Branch("photonphi_f"          ,&photonphi_f         ,"photonphi_f/D"         );
   outTree_->Branch("photone"          ,&photone         ,"photone/D"         );
+  outTree_->Branch("photone_f"          ,&photone_f         ,"photone_f/D"         );
   outTree_->Branch("photonsieie"          ,&photonsieie         ,"photonsieie/D"         );
+  outTree_->Branch("photonsieie_f"          ,&photonsieie_f         ,"photonsieie_f/D"         );
   outTree_->Branch("photonphoiso"          ,&photonphoiso         ,"photonphoiso/D"         );
+  outTree_->Branch("photonphoiso_f"          ,&photonphoiso_f         ,"photonphoiso_f/D"         );
   outTree_->Branch("photonchiso"          ,&photonchiso         ,"photonchiso/D"         );
+  outTree_->Branch("photonchiso_f"          ,&photonchiso_f         ,"photonchiso_f/D"         );
+  outTree_->Branch("photonnhiso"          ,&photonnhiso         ,"photonnhiso/D"         );
   outTree_->Branch("photonnhiso"          ,&photonnhiso         ,"photonnhiso/D"         );
   outTree_->Branch("iphoton"             ,&iphoton            ,"iphoton/I"            );
+  outTree_->Branch("iphoton_f"             ,&iphoton_f            ,"iphoton_f/I"            );
   outTree_->Branch("drla"          ,&drla         ,"drla/D"         );
+  outTree_->Branch("drla_f"          ,&drla_f         ,"drla_f/D"         );
   outTree_->Branch("drla2"          ,&drla2         ,"drla2/D"         );
+  outTree_->Branch("drla2_f"          ,&drla2_f         ,"drla2_f/D"         );
     //photon gen match
 //    outTree_->Branch("dR"    , &dR_, "dR/D");
 //    outTree_->Branch("ISRPho"        , &ISRPho       ,"ISRPho/O"       );
@@ -408,26 +438,47 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("ak4jet_csv"        , ak4jet_csv       ,"ak4jet_csv[6]/D"       );
   outTree_->Branch("ak4jet_icsv"        , ak4jet_icsv       ,"ak4jet_icsv[6]/D"       );
   outTree_->Branch("jet1pt"          ,&jet1pt         ,"jet1pt/D"         );
+  outTree_->Branch("jet1pt_f"          ,&jet1pt_f         ,"jet1pt_f/D"         );
   outTree_->Branch("jet1eta"          ,&jet1eta         ,"jet1eta/D"         );
+  outTree_->Branch("jet1eta_f"          ,&jet1eta_f         ,"jet1eta_f/D"         );
   outTree_->Branch("jet1phi"          ,&jet1phi         ,"jet1phi/D"         );
+  outTree_->Branch("jet1phi_f"          ,&jet1phi_f         ,"jet1phi_f/D"         );
   outTree_->Branch("jet1e"          ,&jet1e         ,"jet1e/D"         );
+  outTree_->Branch("jet1e_f"          ,&jet1e_f         ,"jet1e_f/D"         );
   outTree_->Branch("jet1csv"          ,&jet1csv         ,"jet1csv/D"         );
+  outTree_->Branch("jet1csv_f"          ,&jet1csv_f         ,"jet1csv_f/D"         );   
   outTree_->Branch("jet1icsv"          ,&jet1icsv         ,"jet1icsv/D"         );
+  outTree_->Branch("jet1icsv_f"          ,&jet1icsv_f         ,"jet1icsv_f/D"         ); 
   outTree_->Branch("jet2pt"          ,&jet2pt         ,"jet2pt/D"         );
+  outTree_->Branch("jet2pt_f"          ,&jet2pt_f         ,"jet2pt_f/D"         );
   outTree_->Branch("jet2eta"          ,&jet2eta         ,"jet2eta/D"         );
+  outTree_->Branch("jet2eta_f"          ,&jet2eta_f         ,"jet2eta_f/D"         );
   outTree_->Branch("jet2phi"          ,&jet2phi         ,"jet2phi/D"         );
+  outTree_->Branch("jet2phi_f"          ,&jet2phi_f         ,"jet2phi_f/D"         );
   outTree_->Branch("jet2e"          ,&jet2e         ,"jet2e/D"         );
+  outTree_->Branch("jet2e_f"          ,&jet2e_f         ,"jet2e_f/D"         );
   outTree_->Branch("jet2csv"          ,&jet2csv         ,"jet2csv/D"         );
+  outTree_->Branch("jet2csv_f"          ,&jet2csv_f         ,"jet2csv_f/D"         );
   outTree_->Branch("jet2icsv"          ,&jet2icsv         ,"jet2icsv/D"         );
+  outTree_->Branch("jet2icsv_f"          ,&jet2icsv_f         ,"jet2icsv_f/D"         );
   outTree_->Branch("drj1a"          ,&drj1a         ,"drj1a/D"         );
+  outTree_->Branch("drj1a_f"          ,&drj1a_f         ,"drj1a_f/D"         );
   outTree_->Branch("drj2a"          ,&drj2a         ,"drj2a/D"         );
+  outTree_->Branch("drj2a_f"          ,&drj2a_f         ,"drj2a_f/D"         );
   outTree_->Branch("drj1l"          ,&drj1l         ,"drj1l/D"         );
+  outTree_->Branch("drj1l_f"          ,&drj1l_f         ,"drj1l_f/D"         );
   outTree_->Branch("drj2l"          ,&drj2l         ,"drj2l/D"         );
+  outTree_->Branch("drj2l_f"          ,&drj2l_f         ,"drj2l_f/D"         );
   outTree_->Branch("drj1l2"          ,&drj1l2         ,"drj1l2/D"         );
+  outTree_->Branch("drj1l2_f"          ,&drj1l2_f         ,"drj1l2_f/D"         );
   outTree_->Branch("drj2l2"          ,&drj2l2         ,"drj2l2/D"         );
+  outTree_->Branch("drj2l2_f"          ,&drj2l2_f         ,"drj2l2_f/D"         );
   outTree_->Branch("Mjj"          ,&Mjj         ,"Mjj/D"         );
+  outTree_->Branch("Mjj_f"          ,&Mjj_f         ,"Mjj_f/D"         );
   outTree_->Branch("deltaeta"          ,&deltaeta         ,"deltaeta/D"         );
+  outTree_->Branch("deltaeta_f"          ,&deltaeta_f         ,"deltaeta_f/D"         );
   outTree_->Branch("zepp"          ,&zepp         ,"zepp/D"         );
+  outTree_->Branch("zepp_f"          ,&zepp_f         ,"zepp_f/D"         );
   /// Generic kinematic quantities
   outTree_->Branch("ptlep1"          ,&ptlep1         ,"ptlep1/D"         );
   outTree_->Branch("etalep1"         ,&etalep1        ,"etalep1/D"        );
@@ -435,11 +486,11 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("ptlep2"          ,&ptlep2         ,"ptlep2/D"         );
   outTree_->Branch("etalep2"         ,&etalep2        ,"etalep2/D"        );
   outTree_->Branch("philep2"         ,&philep2        ,"philep2/D"        );
-//  outTree_->Branch("met"             ,&met            ,"met/D"            );
-//  outTree_->Branch("metPhi"          ,&metPhi         ,"metPhi/D"         );
   outTree_->Branch("j1metPhi"          ,&j1metPhi         ,"j1metPhi/D"         );
+  outTree_->Branch("j1metPhi_f"          ,&j1metPhi_f         ,"j1metPhi_f/D"         );
   outTree_->Branch("j2metPhi"          ,&j2metPhi         ,"j2metPhi/D"         );
-   
+  outTree_->Branch("j2metPhi_f"          ,&j2metPhi_f         ,"j2metPhi_f/D"         );
+ 
   outTree_->Branch("METraw_et",&METraw_et,"METraw_et/D");
   outTree_->Branch("METraw_phi",&METraw_phi,"METraw_phi/D");
   outTree_->Branch("METraw_sumEt",&METraw_sumEt,"METraw_sumEt/D");
@@ -458,10 +509,12 @@ ZPKUTreeMaker::ZPKUTreeMaker(const edm::ParameterSet& iConfig)//:
   // filter
   outTree_->Branch("passFilter_HBHE"                 ,&passFilter_HBHE_                ,"passFilter_HBHE_/O");
   outTree_->Branch("passFilter_HBHEIso"                 ,&passFilter_HBHEIso_                ,"passFilter_HBHEIso_/O");
-  outTree_->Branch("passFilter_CSCHalo"              ,&passFilter_CSCHalo_             ,"passFilter_CSCHalo_/O");
+  outTree_->Branch("passFilter_globalTightHalo"	,&passFilter_globalTightHalo_ ,"passFilter_globalTightHalo_/O");
   outTree_->Branch("passFilter_ECALDeadCell"         ,&passFilter_ECALDeadCell_        ,"passFilter_ECALDeadCell_/O");
   outTree_->Branch("passFilter_GoodVtx"              ,&passFilter_GoodVtx_             ,"passFilter_GoodVtx_/O");
   outTree_->Branch("passFilter_EEBadSc"              ,&passFilter_EEBadSc_             ,"passFilter_EEBadSc_/O");
+  outTree_->Branch("passFilter_badMuon"                 ,&passFilter_badMuon_                ,"passFilter_badMuon_/O");
+  outTree_->Branch("passFilter_badChargedHadron"                 ,&passFilter_badChargedHadron_                ,"passFilter_badChargedHadron_/O");
 
   /// Other quantities
 //  outTree_->Branch("triggerWeight"   ,&triggerWeight  ,"triggerWeight/D"  );
@@ -822,8 +875,8 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             passFilter_HBHE_ = noiseFilterBits_->accept(i); // TO BE USED
    if (names.triggerName(i) == HBHENoiseIsoFilter_Selector_)
             passFilter_HBHEIso_ = noiseFilterBits_->accept(i); // TO BE USED
-   if (names.triggerName(i) == CSCHaloNoiseFilter_Selector_)
-            passFilter_CSCHalo_ = noiseFilterBits_->accept(i); // TO BE USED
+   if (names.triggerName(i) ==ECALDeadCellNoiseFilter_Selector_)
+            passFilter_globalTightHalo_ = noiseFilterBits_->accept(i); // TO BE USED on 2016
    if (names.triggerName(i) == ECALDeadCellNoiseFilter_Selector_)
             passFilter_ECALDeadCell_ = noiseFilterBits_->accept(i); // under scrutiny
    if (names.triggerName(i) == GoodVtxNoiseFilter_Selector_)
@@ -831,6 +884,12 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    if (names.triggerName(i) == EEBadScNoiseFilter_Selector_)
             passFilter_EEBadSc_ = noiseFilterBits_->accept(i); // under scrutiny
    }
+   edm::Handle<bool> badMuonResultHandle;
+   edm::Handle<bool> badChargedHadronResultHandle;
+   iEvent.getByToken(badMuon_Selector_, badMuonResultHandle);
+   iEvent.getByToken(badChargedHadron_Selector_, badChargedHadronResultHandle);
+   passFilter_badMuon_ = *badMuonResultHandle;
+   passFilter_badChargedHadron_ = *badChargedHadronResultHandle;
 
    const reco::Candidate& leptonicV = leptonicVs->at(0);
    const reco::Candidate& metCand = metHandle->at(0);
@@ -945,7 +1004,7 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap;
          iEvent.getByToken(phoPhotonIsolationToken_, phoPhotonIsolationMap);
 
-         photonet=-100.;  iphoton=-1;
+         photonet=-100.; photonet_f=-100.;  iphoton=-1; iphoton_f=-1;
             for (size_t ip=0; ip<photons->size();ip++)
          {
 
@@ -967,8 +1026,8 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             double nhiso=std::max(0.0, nhIso1 - rhoVal_*effAreaNeuHadrons_.getEffectiveArea(fabs(phosc_eta)));
             double phoiso=std::max(0.0, phIso1 - rhoVal_*effAreaPhotons_.getEffectiveArea(fabs(phosc_eta)));
 
-            int istightphoton=0;
-
+            int ismedium_photon=0;
+			int ismedium_photon_f=0;
              edm::Handle<edm::View<pat::Electron> > electrons;
              iEvent.getByToken(electronToken_, electrons);
              edm::Handle<reco::BeamSpot> beamSpot;
@@ -1010,17 +1069,33 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 photon_mva[ip]=(tp4+glepton+glepton2).M();
                }
 
-            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.050 && photon_sieie[ip]<0.0102 && chiso<1.37 && nhiso<(1.06 + (0.014*(*photons)[ip].pt()+0.000019*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.28+0.0053*(*photons)[ip].pt())) {istightphoton=1;}
-            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.050 && photon_sieie[ip]<0.0268 && chiso<1.10 && nhiso<(2.69 + (0.0139*(*photons)[ip].pt()+0.000025*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.39+0.0034*(*photons)[ip].pt())) {istightphoton=1;}
 
-             if(istightphoton==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) {
-                 if((*photons)[ip].pt()>photonet)
-                         {
-                      iphoton=ip;
+               if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.050 && photon_sieie[ip]<0.0102 && chiso<1.37 && nhiso<(1.06 + (0.014*(*photons)[ip].pt()+0.000019*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.28+0.0053*(*photons)[ip].pt())) {ismedium_photon=1;}
+               if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.050 && photon_sieie[ip]<0.0268 && chiso<1.10 && nhiso<(2.69 + (0.0139*(*photons)[ip].pt()+0.000025*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.39+0.0034*(*photons)[ip].pt())) {ismedium_photon=1;}
 
-          }
-         }
-         }
+               if(ismedium_photon==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7 && deltaR(phosc_eta,phosc_phi,etalep2,philep2) > 0.7) { 
+                   if(ip==0) {photonet=(*photons)[ip].pt(); iphoton=ip;}
+                   if((*photons)[ip].pt()>photonet)
+                   {
+                      photonet=(*photons)[ip].pt(); iphoton=ip;
+                   }
+               }
+
+//////////////////////////////////for fake photon study, store photon without sieie cut
+////Inverting loose ID
+            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.050 && !(photon_sieie[ip]<0.0102&&chiso<3.32 && nhiso<(1.92 + (0.014*(*photons)[ip].pt()+0.000019*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.81+0.0053*(*photons)[ip].pt()))) {ismedium_photon_f=1;}
+            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.050 && !(photon_sieie[ip]<0.0274 && chiso<1.97 && nhiso<(11.86 + (0.0139*(*photons)[ip].pt()+0.000025*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.83+0.0034*(*photons)[ip].pt()))) {ismedium_photon_f=1;}
+            if(ismedium_photon_f==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7 && deltaR(phosc_eta,phosc_phi,etalep2,philep2) > 0.7) { 
+                if(ip==0) {photonet_f=(*photons)[ip].pt(); iphoton_f=ip;}
+                if((*photons)[ip].pt()>photonet_f) {
+                  photonet_f=(*photons)[ip].pt(); iphoton_f=ip;
+                }
+            }
+///////////////////////////////////////////////////////////////////////////////////////
+  }
+
+
+
              //Gen photon matching
     if(RunOnMC_ && iphoton>-1){
              const auto pho1 = photons->ptrAt(iphoton);
@@ -1047,11 +1122,32 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                Mva=(photonp4+wp4).M();
          }
 
+
+         if(iphoton_f>-1 && iphoton_f<6) {
+	       photonet_f=photon_pt[iphoton_f];
+	       photoneta_f=photon_eta[iphoton_f];
+	       photonphi_f=photon_phi[iphoton_f];
+	       photone_f=photon_e[iphoton_f];
+	       photonsieie_f=photon_sieie[iphoton_f];
+	       photonphoiso_f=photon_phoiso[iphoton_f];
+	       photonchiso_f=photon_chiso[iphoton_f];
+	       photonnhiso_f=photon_nhiso[iphoton_f];
+	       drla_f=deltaR(photon_eta[iphoton_f],photon_phi[iphoton_f],etalep1,philep1);
+	       drla2_f=deltaR(photon_eta[iphoton_f],photon_phi[iphoton_f],etalep2,philep2);
+	       TLorentzVector photonp4_f;
+	       photonp4_f.SetPtEtaPhiE(photonet_f, photoneta_f, photonphi_f, photone_f);
+	       Mla_f=(photonp4_f+glepton).M();
+	       Mla2_f=(photonp4_f+glepton2).M();
+	       TLorentzVector wp4_f;
+               wp4_f.SetPtEtaPhiE(leptonicV.pt(), leptonicV.eta(), leptonicV.phi(), leptonicV.energy());
+	       Mva_f=(photonp4_f+wp4_f).M();
+	     }
     
              // ****************************************************************** //
             // ************************* AK4 Jets Information****************** //
              // ****************************************************************** //
     Int_t jetindexphoton12[2] = {-1,-1}; 
+	Int_t jetindexphoton12_f[2] = {-1,-1};
 
     std::vector<JetCorrectorParameters> vPar;
     for ( std::vector<std::string>::const_iterator payloadBegin = jecAK4Labels_.begin(), payloadEnd = jecAK4Labels_.end(), ipayload = payloadBegin; ipayload != payloadEnd; ++ipayload ) {
@@ -1095,7 +1191,7 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     sort (jets.begin (), jets.end (), ZmysortPt);
            for (size_t i=0;i<jets.size();i++) {
-             if(iphoton>0) {
+             if(iphoton>-1) {
                double drtmp1=deltaR(jets.at(i)->Eta(), jets.at(i)->Phi(), photoneta,photonphi);
               if(drtmp1>0.5 && jetindexphoton12[0]==-1&&jetindexphoton12[1]==-1) {
                      jetindexphoton12[0] = i;
@@ -1108,6 +1204,19 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
          }
 
+          for (size_t i=0;i<jets.size();i++) {
+	     if(iphoton_f>-1) {    
+	        double drtmp1_f=deltaR(jets.at(i)->Eta(), jets.at(i)->Phi(), photoneta_f,photonphi_f);
+	        if(drtmp1_f>0.5 && jetindexphoton12_f[0]==-1&&jetindexphoton12_f[1]==-1) {
+	             jetindexphoton12_f[0] = i;
+	             continue;  
+	       }
+	        if(drtmp1_f>0.5 && jetindexphoton12_f[0]!=-1&&jetindexphoton12_f[1]==-1) {
+	             jetindexphoton12_f[1] = i;
+	             continue; 
+	        }
+	      }		
+         }
 
          if(jetindexphoton12[0]>-1 && jetindexphoton12[1]>-1) {
             jet1pt=jets[jetindexphoton12[0]]->Pt();
@@ -1118,6 +1227,14 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             jet2eta=jets[jetindexphoton12[1]]->Eta();
             jet2phi=jets[jetindexphoton12[1]]->Phi();
             jet2e=jets[jetindexphoton12[1]]->E();
+
+
+            jet1csv =(*ak4jets)[jetindexphoton12[0]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+            jet2csv =(*ak4jets)[jetindexphoton12[1]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+
+            jet1icsv =(*ak4jets)[jetindexphoton12[0]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+            jet2icsv =(*ak4jets)[jetindexphoton12[1]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
 
             drj1a=deltaR(jet1eta,jet1phi,photoneta,photonphi);
             drj2a=deltaR(jet2eta,jet2phi,photoneta,photonphi);
@@ -1149,6 +1266,48 @@ ZPKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             zepp = fabs((vp4+photonp42).Rapidity() - (j1p4.Rapidity() + j2p4.Rapidity())/ 2.0); 
          }
    
+
+         if(jetindexphoton12_f[0]>-1 && jetindexphoton12_f[1]>-1) {
+	    jet1pt_f=jets[jetindexphoton12_f[0]]->Pt();
+            jet1eta_f=jets[jetindexphoton12_f[0]]->Eta();
+            jet1phi_f=jets[jetindexphoton12_f[0]]->Phi();
+            jet1e_f=jets[jetindexphoton12_f[0]]->E();
+            jet2pt_f=jets[jetindexphoton12_f[1]]->Pt();
+            jet2eta_f=jets[jetindexphoton12_f[1]]->Eta();
+            jet2phi_f=jets[jetindexphoton12_f[1]]->Phi();
+            jet2e_f=jets[jetindexphoton12_f[1]]->E();
+ 
+            jet1csv_f =(*ak4jets)[jetindexphoton12_f[0]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+            jet2csv_f =(*ak4jets)[jetindexphoton12_f[1]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+
+            jet1icsv_f =(*ak4jets)[jetindexphoton12_f[0]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+            jet2icsv_f =(*ak4jets)[jetindexphoton12_f[1]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
+
+ 	    drj1a_f=deltaR(jet1eta_f,jet1phi_f,photoneta_f,photonphi_f);
+            drj2a_f=deltaR(jet2eta_f,jet2phi_f,photoneta_f,photonphi_f);
+            drj1l_f=deltaR(jet1eta_f,jet1phi_f,etalep1,philep1);
+            drj2l_f=deltaR(jet2eta_f,jet2phi_f,etalep1,philep1);
+            drj1l2_f=deltaR(jet1eta_f,jet1phi_f,etalep2,philep2);
+            drj2l2_f=deltaR(jet2eta_f,jet2phi_f,etalep2,philep2);
+            TLorentzVector j1p4_f;
+            j1p4_f.SetPtEtaPhiE(jet1pt_f, jet1eta_f, jet1phi_f, jet1e_f);
+            TLorentzVector j2p4_f;
+            j2p4_f.SetPtEtaPhiE(jet2pt_f, jet2eta_f, jet2phi_f, jet2e_f);
+            TLorentzVector photonp42_f;
+            photonp42_f.SetPtEtaPhiE(photonet_f, photoneta_f, photonphi_f, photone_f);
+            TLorentzVector vp4_f;
+            vp4_f.SetPtEtaPhiE(leptonicV.pt(), leptonicV.eta(), leptonicV.phi(), leptonicV.energy());
+            j1metPhi_f=fabs(jet1phi_f-MET_phi);
+            if(j1metPhi_f>Pi) {j1metPhi_f=2.0*Pi-j1metPhi_f;}
+            j2metPhi_f=fabs(jet2phi_f-MET_phi);
+            if(j2metPhi_f>Pi) {j2metPhi_f=2.0*Pi-j2metPhi_f;}
+            Mjj_f=(j1p4_f + j2p4_f).M();
+            deltaeta_f = fabs(jet1eta_f - jet2eta_f);
+            zepp_f = fabs((vp4_f+photonp42_f).Rapidity() - (j1p4_f.Rapidity() + j2p4_f.Rapidity())/ 2.0);
+         }
+
+
        outTree_->Fill();
 	   delete jecAK4_;
 	   jecAK4_=0;
@@ -1174,16 +1333,16 @@ void ZPKUTreeMaker::setDummyValues() {
      yVlep          = -1e1;
      phiVlep        = -1e1;
      massVlep       = -1e1;
-     Mla=-1e1;
-     Mla2=-1e1;
-     Mva=-1e1;
+     Mla=-1e1;		Mla_f=-1e1;
+     Mla2=-1e1;         Mla2_f=-1e1;
+     Mva=-1e1;		Mva_f=-1e1;     
      ptlep1         = -1e1;
      etalep1        = -1e1;
      philep1        = -1e1;
      met            = -1e1;
      metPhi         = -1e1;
-     j1metPhi         = -1e1;
-     j2metPhi         = -1e1;
+     j1metPhi         = -1e1; j1metPhi_f         = -1e1;
+     j2metPhi         = -1e1; j2metPhi_f         = -1e1;
      METraw_et = -99;
      METraw_phi = -99;
      METraw_sumEt = -99;
@@ -1234,17 +1393,17 @@ void ZPKUTreeMaker::setDummyValues() {
      ak4jet_icsv[i]=-1e1;
      }
 
-     photonet=-1e1;
-     photoneta=-1e1;
-     photonphi=-1e1;
-     photone=-1e1;
-     photonsieie=-1e1;
-     photonphoiso=-1e1;
-     photonchiso=-1e1;
-     photonnhiso=-1e1;
-     iphoton=-1;
-     drla=1e1;
-     drla2=1e1;
+     photonet=-1e1;	 photonet_f=-1e1;
+     photoneta=-1e1;  photoneta_f=-1e1;
+     photonphi=-1e1;  photonphi_f=-1e1;
+     photone=-1e1;   photone_f=-1e1;
+     photonsieie=-1e1;  photonsieie_f=-1e1;
+     photonphoiso=-1e1;  photonphoiso_f=-1e1;
+     photonchiso=-1e1;  photonchiso_f=-1e1;
+     photonnhiso=-1e1;  photonnhiso_f=-1e1;
+     iphoton=-1;	 iphoton_f=-1;
+     drla=1e1; 		 drla_f=1e1;
+     drla2=1e1; 	 drla2_f=1e1;
      passEleVeto=false;
      passEleVetonew=false;
      passPixelSeedVeto=false;
@@ -1254,38 +1413,40 @@ void ZPKUTreeMaker::setDummyValues() {
      dR_ = 999;
      isTrue_=-1;
      isprompt_=-1; 
-     jet1pt=-1e1;
-     jet1eta=-1e1;
-     jet1phi=-1e1;
-     jet1e=-1e1;
-     jet1csv=-1e1;
-     jet1icsv=-1e1;
-     jet2pt=-1e1;
-     jet2eta=-1e1;
-     jet2phi=-1e1;
-     jet2e=-1e1;
-     jet2csv=-1e1;
-     jet2icsv=-1e1;
-     drj1a=1e1;
-     drj2a=1e1;
-     drj1l=1e1;
-     drj2l=1e1;
-     drj1l2=1e1;
-     drj2l2=1e1;
-     Mjj=-1e1;
-     deltaeta=-1e1;
-     zepp=-1e1;
-  
+     jet1pt=-1e1;  jet1pt_f=-1e1;
+     jet1eta=-1e1;  jet1eta_f=-1e1;
+     jet1phi=-1e1;  jet1phi_f=-1e1;
+     jet1e=-1e1;  jet1e_f=-1e1;
+     jet1csv=-1e1;  jet1csv_f=-1e1;
+     jet1icsv=-1e1;  jet1icsv_f=-1e1;
+     jet2pt=-1e1;  jet2pt_f=-1e1;
+     jet2eta=-1e1;  jet2eta_f=-1e1;
+     jet2phi=-1e1;  jet2phi_f=-1e1;
+     jet2e=-1e1;  jet2e_f=-1e1;
+     jet2csv=-1e1;  jet2csv_f=-1e1;
+     jet2icsv=-1e1;  jet2icsv_f=-1e1;
+     drj1a=1e1;  drj1a_f=1e1;
+     drj2a=1e1;  drj2a_f=1e1;
+     drj1l=1e1;  drj1l_f=1e1;
+     drj2l=1e1;  drj2l_f=1e1;
+     drj1l2=1e1;  drj1l2_f=1e1;
+     drj2l2=1e1;  drj2l2_f=1e1;
+     Mjj=-1e1;   Mjj_f=-1e1;
+     deltaeta=-1e1;   deltaeta_f=-1e1;
+     zepp=-1e1;   zepp_f=-1e1;
+ 
      HLT_Ele1=-99;
      HLT_Mu1=-99;
 
  
      passFilter_HBHE_                  = false;
      passFilter_HBHEIso_               = false;
-     passFilter_CSCHalo_               = false;
+     passFilter_globalTightHalo_ =false;
      passFilter_ECALDeadCell_          = false;
      passFilter_GoodVtx_               = false;
      passFilter_EEBadSc_               = false;
+     passFilter_badMuon_               = false;
+     passFilter_badChargedHadron_      = false; 
 }
 
 // ------------ method called once each job just before starting event loop  ------------

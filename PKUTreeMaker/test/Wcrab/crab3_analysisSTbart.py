@@ -1,7 +1,7 @@
 from WMCore.Configuration import Configuration
 config = Configuration()
 config.section_("General")
-config.General.requestName   = 'ZZ-1'
+config.General.requestName   = 'STbart-1'
 config.General.transferLogs = True
 
 config.section_("JobType")
@@ -12,13 +12,13 @@ config.JobType.psetName    = 'analysis.py'
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_("Data")
-config.Data.inputDataset = '/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM'
+config.Data.inputDataset = '/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM'
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 1
+config.Data.unitsPerJob = 2
 config.Data.totalUnits = -1
 config.Data.publication = False
-config.Data.outputDatasetTag = 'ZZ-1'
+config.Data.outputDatasetTag = 'STbart-1'
 
 config.section_("Site")
 config.Site.storageSite = 'T2_CH_CERN'

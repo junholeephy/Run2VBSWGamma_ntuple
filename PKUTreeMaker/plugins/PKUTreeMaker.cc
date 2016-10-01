@@ -55,7 +55,6 @@
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
-#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
 struct sortPt
 {
    bool operator()(TLorentzVector* s1, TLorentzVector* s2) const
@@ -119,13 +118,12 @@ private:
   edm::Handle< edm::TriggerResults> 			     noiseFilterBits_;
   std::string HBHENoiseFilter_Selector_;
   std::string HBHENoiseIsoFilter_Selector_;
-//  std::string CSCHaloNoiseFilter_Selector_;
   std::string ECALDeadCellNoiseFilter_Selector_;
   std::string GoodVtxNoiseFilter_Selector_;
   std::string EEBadScNoiseFilter_Selector_;
   std::string globalTightHaloFilter_Selector_;
-//  std::string muonBadTrackFilter_Selector_;
-//  std::string chargedHadronTrackResolutionFilter_Selector_;
+  edm::EDGetTokenT<bool>  badMuon_Selector_;
+  edm::EDGetTokenT<bool>  badChargedHadron_Selector_;
 
   edm::EDGetTokenT<edm::ValueMap<float> > full5x5SigmaIEtaIEtaMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_;
@@ -165,8 +163,6 @@ private:
   double ak4jet_csv[6],ak4jet_icsv[6];
   double drjetlep[6], drjetphoton[6];
   //Photon
-  double lhephoton_pt;
-  
   double genphoton_pt[6],genphoton_eta[6],genphoton_phi[6];
   double genmuon_pt[6],genmuon_eta[6],genmuon_phi[6];
   double genelectron_pt[6],genelectron_eta[6],genelectron_phi[6];
@@ -184,7 +180,6 @@ private:
   bool passEleVeto, passEleVetonew, passPixelSeedVeto;
   //Photon gen match
   int   isTrue_;
-  int   isTrue_f_;
   bool ISRPho;
   int isprompt_;
   double dR_;
@@ -226,15 +221,13 @@ private:
 // filter
   bool passFilter_HBHE_                   ;
   bool passFilter_HBHEIso_                ;
-//  bool passFilter_CSCHalo_                ;
   bool passFilter_globalTightHalo_	  ;
   bool passFilter_ECALDeadCell_           ;
   bool passFilter_GoodVtx_                ;
   bool passFilter_EEBadSc_                ;
-//  bool passFilter_badMuonFilter_	   	  ;
-//  bool passFilter_chargedHadronFilter_    ;
+  bool passFilter_badMuon_                ;
+  bool passFilter_badChargedHadron_       ;
 
-//  edm::EDGetTokenT<LHEEventProduct> LheToken_;
   edm::EDGetTokenT<GenEventInfoProduct> GenToken_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PUToken_;
   edm::EDGetTokenT<edm::View<reco::Candidate>> leptonicVSrc_;
@@ -330,13 +323,12 @@ PKUTreeMaker::PKUTreeMaker(const edm::ParameterSet& iConfig)//:
    noiseFilterToken_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("noiseFilter"));
    HBHENoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_HBHENoiseFilter");
    HBHENoiseIsoFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_HBHENoiseIsoFilter");  
-//   CSCHaloNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_CSCTightHaloFilter");
    globalTightHaloFilter_Selector_ = iConfig.getParameter<std::string> ("noiseFilterSelection_globalTightHaloFilter"); 
    ECALDeadCellNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_EcalDeadCellTriggerPrimitiveFilter");
    GoodVtxNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_goodVertices");
    EEBadScNoiseFilter_Selector_ =  iConfig.getParameter<std::string> ("noiseFilterSelection_eeBadScFilter");
-//   muonBadTrackFilter_Selector_ = iConfig.getParameter<std::string> ("noiseFilterSelection_muonBadTrackFilter");
-//   chargedHadronTrackResolutionFilter_Selector_ = iConfig.getParameter<std::string> ("noiseFilterSelection_chargedHadronTrackResolutionFilter");
+   badMuon_Selector_ =  consumes<bool>(iConfig.getParameter<edm::InputTag> ("noiseFilterSelection_badMuon"));
+   badChargedHadron_Selector_ =  consumes<bool>(iConfig.getParameter<edm::InputTag> ("noiseFilterSelection_badChargedHadron"));
 
    full5x5SigmaIEtaIEtaMapToken_=(consumes <edm::ValueMap<float> >
 				(iConfig.getParameter<edm::InputTag>("full5x5SigmaIEtaIEtaMap")));
@@ -381,7 +373,6 @@ PKUTreeMaker::PKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("nlooseeles"          ,&nlooseeles         ,"nlooseeles/I"         );
   outTree_->Branch("nloosemus"          ,&nloosemus         ,"nloosemus/I"         );
 
-  outTree_->Branch("lhephoton_pt"	 ,&lhephoton_pt       ,"lhephoton_pt/D"		);
   outTree_->Branch("genphoton_pt"        , genphoton_pt       ,"genphoton_pt[6]/D"       );
   outTree_->Branch("genphoton_eta"        , genphoton_eta       ,"genphoton_eta[6]/D"       );
   outTree_->Branch("genphoton_phi"        , genphoton_phi       ,"genphoton_phi[6]/D"       );
@@ -439,9 +430,8 @@ PKUTreeMaker::PKUTreeMaker(const edm::ParameterSet& iConfig)//:
     //photon gen match
 //    outTree_->Branch("dR"    , &dR_, "dR/D");
 //    outTree_->Branch("ISRPho"        , &ISRPho       ,"ISRPho/O"       );
-    outTree_->Branch("isTrue", &isTrue_, "isTrue/I");
-	outTree_->Branch("isTrue_f", &isTrue_f_, "isTrue_f/I");
-    outTree_->Branch("isprompt"    , &isprompt_, "isprompt/I");
+  outTree_->Branch("isTrue", &isTrue_, "isTrue/I");
+  outTree_->Branch("isprompt"    , &isprompt_, "isprompt/I");
 
 //jets
   outTree_->Branch("ak4jet_pt"        , ak4jet_pt       ,"ak4jet_pt[6]/D"       );
@@ -492,8 +482,6 @@ PKUTreeMaker::PKUTreeMaker(const edm::ParameterSet& iConfig)//:
   outTree_->Branch("ptlep1"          ,&ptlep1         ,"ptlep1/D"         );
   outTree_->Branch("etalep1"         ,&etalep1        ,"etalep1/D"        );
   outTree_->Branch("philep1"         ,&philep1        ,"philep1/D"        );
-  outTree_->Branch("met"             ,&met            ,"met/D"            );
-  outTree_->Branch("metPhi"          ,&metPhi         ,"metPhi/D"         );
   outTree_->Branch("j1metPhi"          ,&j1metPhi         ,"j1metPhi/D"         );
   outTree_->Branch("j1metPhi_f"          ,&j1metPhi_f         ,"j1metPhi_f/D"         );
   outTree_->Branch("j2metPhi"          ,&j2metPhi         ,"j2metPhi/D"         );
@@ -520,13 +508,12 @@ PKUTreeMaker::PKUTreeMaker(const edm::ParameterSet& iConfig)//:
   // filter
   outTree_->Branch("passFilter_HBHE"                 ,&passFilter_HBHE_                ,"passFilter_HBHE_/O");
   outTree_->Branch("passFilter_HBHEIso"                 ,&passFilter_HBHEIso_                ,"passFilter_HBHEIso_/O");
-//  outTree_->Branch("passFilter_CSCHalo"              ,&passFilter_CSCHalo_             ,"passFilter_CSCHalo_/O");
   outTree_->Branch("passFilter_globalTightHalo"		,&passFilter_globalTightHalo_    ,"passFilter_globalTightHalo_/O");
   outTree_->Branch("passFilter_ECALDeadCell"         ,&passFilter_ECALDeadCell_        ,"passFilter_ECALDeadCell_/O");
   outTree_->Branch("passFilter_GoodVtx"              ,&passFilter_GoodVtx_             ,"passFilter_GoodVtx_/O");
   outTree_->Branch("passFilter_EEBadSc"              ,&passFilter_EEBadSc_             ,"passFilter_EEBadSc_/O");
-//  outTree_->Branch("passFilter_badMuonFilter"  	     ,&passFilter_badMuonFilter_	       ,"passFilter_badMuonFilter_/O");
-//  outTree_->Branch("passFilter_chargedHadronFilter"  ,&passFilter_chargedHadronFilter_         ,"passFilter_chargedHadronFilter_/O");
+  outTree_->Branch("passFilter_badMuon"                 ,&passFilter_badMuon_                ,"passFilter_badMuon_/O");
+  outTree_->Branch("passFilter_badChargedHadron"                 ,&passFilter_badChargedHadron_                ,"passFilter_badChargedHadron_/O");
 
   /// Other quantities
 //  outTree_->Branch("triggerWeight"   ,&triggerWeight  ,"triggerWeight/D"  );
@@ -1034,8 +1021,6 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             passFilter_HBHE_ = noiseFilterBits_->accept(i); // TO BE USED
    if (names.triggerName(i) == HBHENoiseIsoFilter_Selector_)
             passFilter_HBHEIso_ = noiseFilterBits_->accept(i); // TO BE USED
-//   if (names.triggerName(i) == CSCHaloNoiseFilter_Selector_)
-//            passFilter_CSCHalo_ = noiseFilterBits_->accept(i); // TO BE USED on 2015 
    if (names.triggerName(i) ==ECALDeadCellNoiseFilter_Selector_)
 	      passFilter_globalTightHalo_ = noiseFilterBits_->accept(i); // TO BE USED on 2016
 
@@ -1045,11 +1030,14 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             passFilter_GoodVtx_ = noiseFilterBits_->accept(i); // TO BE USED
    if (names.triggerName(i) == EEBadScNoiseFilter_Selector_)
             passFilter_EEBadSc_ = noiseFilterBits_->accept(i); // under scrutiny
-//   if (names.triggerName(i) == muonBadTrackFilter_Selector_)
-//	    passFilter_badMuonFilter_ = noiseFilterBits_->accept(i);
-//   if (names.triggerName(i) == chargedHadronTrackResolutionFilter_Selector_)
-//	    passFilter_chargedHadronFilter_ = noiseFilterBits_->accept(i);
    }  
+     edm::Handle<bool> badMuonResultHandle;
+     edm::Handle<bool> badChargedHadronResultHandle;
+     iEvent.getByToken(badMuon_Selector_, badMuonResultHandle);
+     iEvent.getByToken(badChargedHadron_Selector_, badChargedHadronResultHandle);
+     passFilter_badMuon_ = *badMuonResultHandle;
+     passFilter_badChargedHadron_ = *badChargedHadronResultHandle;
+
   
    const reco::Candidate& leptonicV = leptonicVs->at(0);
    const reco::Candidate& metCand = metHandle->at(0);
@@ -1262,17 +1250,15 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          }
          
 //////////////////////////////////for fake photon study, store photon without sieie cut
-            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.050 &&/* photon_sieie[ip]<0.0102 &&*/ chiso<1.37 && nhiso<(1.06 + (0.014*(*photons)[ip].pt()+0.000019*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.28+0.0053*(*photons)[ip].pt())) {ismedium_photon_f=1;}
-		    if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.050 && /*photon_sieie[ip]<0.0268 &&*/ chiso<1.10 && nhiso<(2.69 + (0.0139*(*photons)[ip].pt()+0.000025*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.39+0.0034*(*photons)[ip].pt())) {ismedium_photon_f=1;}
-
-			if(ismedium_photon_f==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) { if(ip==0) {photonet_f=(*photons)[ip].pt(); iphoton_f=ip;}
-			    if((*photons)[ip].pt()>photonet_f)
-			            {
-			           photonet_f=(*photons)[ip].pt(); iphoton_f=ip;
-         }
-        }			   
-		 
-		 
+//Inverting loose ID
+            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.050 && !(photon_sieie[ip]<0.0102&&chiso<3.32 && nhiso<(1.92 + (0.014*(*photons)[ip].pt()+0.000019*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.81+0.0053*(*photons)[ip].pt()))) {ismedium_photon_f=1;}
+            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.050 && !(photon_sieie[ip]<0.0274 && chiso<1.97 && nhiso<(11.86 + (0.0139*(*photons)[ip].pt()+0.000025*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(0.83+0.0034*(*photons)[ip].pt()))) {ismedium_photon_f=1;}
+            if(ismedium_photon_f==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) {
+                if(ip==0) {photonet_f=(*photons)[ip].pt(); iphoton_f=ip;}
+                if((*photons)[ip].pt()>photonet_f) {
+                  photonet_f=(*photons)[ip].pt(); iphoton_f=ip;
+                }
+            }		 
 ////////////////////////////////////////////////////////////////////////////////////////		 
 	 }
 
@@ -1284,11 +1270,6 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
              const auto pho1 = photons->ptrAt(iphoton);
              isTrue_= matchToTruth(*pho1, genParticles, ISRPho, dR_, isprompt_);
     }
-
-    if(RunOnMC_ && iphoton_f>-1){
-		     const auto pho2 = photons->ptrAt(iphoton_f);
-			 isTrue_f_= matchToTruth(*pho2, genParticles, ISRPho, dR_, isprompt_);
-	}
 
          if(iphoton>-1 && iphoton<6) {
                photonet=photon_pt[iphoton];//(*photons)[iphoton].pt();
@@ -1417,6 +1398,12 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             jet2phi=jets[jetindexphoton12[1]]->Phi();
             jet2e=jets[jetindexphoton12[1]]->E();
 
+                jet1csv =(*ak4jets)[jetindexphoton12[0]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+                jet2csv =(*ak4jets)[jetindexphoton12[1]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+
+                jet1icsv =(*ak4jets)[jetindexphoton12[0]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+                jet2icsv =(*ak4jets)[jetindexphoton12[1]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
             drj1a=deltaR(jet1eta,jet1phi,photoneta,photonphi);
             drj2a=deltaR(jet2eta,jet2phi,photoneta,photonphi);
             drj1l=deltaR(jet1eta,jet1phi,etalep1,philep1);
@@ -1457,8 +1444,15 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             jet2eta_f=jets[jetindexphoton12_f[1]]->Eta();
             jet2phi_f=jets[jetindexphoton12_f[1]]->Phi();
             jet2e_f=jets[jetindexphoton12_f[1]]->E();
+
+            jet1csv_f =(*ak4jets)[jetindexphoton12_f[0]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+            jet2csv_f =(*ak4jets)[jetindexphoton12_f[1]].bDiscriminator("pfCombinedSecondaryVertexV2BJetTags");
+
+            jet1icsv_f =(*ak4jets)[jetindexphoton12_f[0]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+            jet2icsv_f =(*ak4jets)[jetindexphoton12_f[1]].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
  
- 			drj1a_f=deltaR(jet1eta_f,jet1phi_f,photoneta_f,photonphi_f);
+	    drj1a_f=deltaR(jet1eta_f,jet1phi_f,photoneta_f,photonphi_f);
             drj2a_f=deltaR(jet2eta_f,jet2phi_f,photoneta_f,photonphi_f);
             drj1l_f=deltaR(jet1eta_f,jet1phi_f,etalep1,philep1);
             drj2l_f=deltaR(jet2eta_f,jet2phi_f,etalep1,philep1);
@@ -1578,8 +1572,6 @@ void PKUTreeMaker::setDummyValues() {
      ak4jet_icsv[i]=-1e1;
      }
 
-     lhephoton_pt=-1e1;
-
      photonet=-1e1;	 photonet_f=-1e1;
      photoneta=-1e1;  photoneta_f=-1e1;
      photonphi=-1e1;  photonphi_f=-1e1;
@@ -1597,8 +1589,7 @@ void PKUTreeMaker::setDummyValues() {
      ISRPho = false;
      dR_ = 999;
      isTrue_=-1;
-     isTrue_f_=-1;
-	 isprompt_=-1; 
+     isprompt_=-1; 
      jet1pt=-1e1;  jet1pt_f=-1e1;
      jet1eta=-1e1;  jet1eta_f=-1e1;
      jet1phi=-1e1;  jet1phi_f=-1e1;
@@ -1628,13 +1619,12 @@ void PKUTreeMaker::setDummyValues() {
  
      passFilter_HBHE_                  = false;
      passFilter_HBHEIso_               = false;
-//     passFilter_CSCHalo_               = false;
      passFilter_globalTightHalo_	=false;
      passFilter_ECALDeadCell_          = false;
      passFilter_GoodVtx_               = false;
      passFilter_EEBadSc_               = false;
-//     passFilter_badMuonFilter_	       = false;
-//     passFilter_chargedHadronFilter_   = false;
+     passFilter_badMuon_               = false;
+     passFilter_badChargedHadron_      = false; 
 }
 
 // ------------ method called once each job just before starting event loop  ------------
