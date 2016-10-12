@@ -8,7 +8,7 @@ config.section_("JobType")
 config.JobType.pluginName  = 'Analysis'
 config.JobType.inputFiles = ['Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt','Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt','Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt']
 # Name of the CMSSW configuration file
-config.JobType.psetName    = 'analysis.py'
+config.JobType.psetName    = 'Zanalysis.py'
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_("Data")
