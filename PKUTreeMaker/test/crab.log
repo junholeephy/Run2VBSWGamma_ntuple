@@ -1,0 +1,165 @@
+DEBUG 2017-03-25 04:42:18,256: 	 Executing command: 'status'
+DEBUG 2017-03-25 04:42:18,257: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-25 04:42:18,259: 	 Error: crab_SMu16H-v is not a valid CRAB project directory.
+ERROR 2017-03-25 04:42:18,259: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/status.py", line 762, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_SMu16H-v is not a valid CRAB project directory.
+DEBUG 2017-03-25 21:15:28,337: 	 Executing command: 'status'
+DEBUG 2017-03-25 21:15:28,337: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-25 21:15:28,339: 	 Error: crab_SMu16H-v is not a valid CRAB project directory.
+ERROR 2017-03-25 21:15:28,339: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/status.py", line 762, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_SMu16H-v is not a valid CRAB project directory.
+DEBUG 2017-03-25 22:19:41,802: 	 Executing command: 'submit'
+DEBUG 2017-03-25 22:19:41,803: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+DEBUG 2017-03-25 22:19:41,812: 	 Checking credentials
+DEBUG 2017-03-25 22:19:41,812: 	 Found proxy file /tmp/x509up_u52224
+DEBUG 2017-03-25 22:19:41,812: 	 Getting proxy life time left
+DEBUG 2017-03-25 22:19:41,915: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u52224 -timeleft
+ output : 86179
+
+ error: 
+ retcode : 0
+DEBUG 2017-03-25 22:19:42,018: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u52224 -actimeleft
+ output : 86179
+
+ error: 
+ retcode : 0
+DEBUG 2017-03-25 22:19:42,018: 	 Proxy valid for 23:56:19 hours
+INFO 2017-03-25 22:19:42,019: 	 Will use CRAB configuration file ./Wcrab/crab3_analysisDY.py
+DEBUG 2017-03-25 22:19:42,020: 	 Loading CRAB configuration file.
+DEBUG 2017-03-25 22:19:42,028: 	 Will use CRAB Analysis plugin (i.e. will run an analysis job type).
+ERROR 2017-03-25 22:19:42,028: 	 Working area '/uscms_data/d3/qhuang2/WA/CMSSW_8_0_26_patch1/src/VAJets/PKUTreeMaker/test/crab_DY-1' already exists 
+Please change the requestName in the config file
+ERROR 2017-03-25 22:19:42,029: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 302, in __init__
+    getattr(self.configuration.General, 'requestName', None))
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/ClientUtilities.py", line 394, in createWorkArea
+    raise ConfigException("Working area '%s' already exists \nPlease change the requestName in the config file" % fullpath)
+ConfigException: Working area '/uscms_data/d3/qhuang2/WA/CMSSW_8_0_26_patch1/src/VAJets/PKUTreeMaker/test/crab_DY-1' already exists 
+Please change the requestName in the config file
+DEBUG 2017-03-25 22:35:45,350: 	 Executing command: 'submit'
+DEBUG 2017-03-25 22:35:45,350: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+DEBUG 2017-03-25 22:35:45,357: 	 Checking credentials
+DEBUG 2017-03-25 22:35:45,358: 	 Found proxy file /tmp/x509up_u52224
+DEBUG 2017-03-25 22:35:45,358: 	 Getting proxy life time left
+DEBUG 2017-03-25 22:35:45,461: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u52224 -timeleft
+ output : 85215
+
+ error: 
+ retcode : 0
+DEBUG 2017-03-25 22:35:45,564: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u52224 -actimeleft
+ output : 85215
+
+ error: 
+ retcode : 0
+DEBUG 2017-03-25 22:35:45,565: 	 Proxy valid for 23:40:15 hours
+ERROR 2017-03-25 22:35:45,565: 	 CRAB configuration file crabConfig.py not found.
+ERROR 2017-03-25 22:35:45,565: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 298, in __init__
+    self.loadConfig(self.options.config, self.args)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 46, in loadConfig
+    raise ConfigurationException("CRAB configuration file %s not found." % (configname))
+ConfigurationException: CRAB configuration file crabConfig.py not found.
+DEBUG 2017-03-26 00:05:24,051: 	 Executing command: 'status'
+DEBUG 2017-03-26 00:05:24,051: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-26 00:05:24,053: 	 Error: crab_STt-2 is not a valid CRAB project directory.
+ERROR 2017-03-26 00:05:24,053: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/status.py", line 762, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_STt-2 is not a valid CRAB project directory.
+DEBUG 2017-03-26 01:27:42,482: 	 Executing command: 'kill'
+DEBUG 2017-03-26 01:27:42,482: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-26 01:27:42,483: 	 Error: crab_SMu16H-v is not a valid CRAB project directory.
+ERROR 2017-03-26 01:27:42,484: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/kill.py", line 62, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_SMu16H-v is not a valid CRAB project directory.
+DEBUG 2017-03-26 08:02:04,709: 	 Executing command: 'status'
+DEBUG 2017-03-26 08:02:04,709: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-26 08:02:04,711: 	 Error: crab_WAJJ is not a valid CRAB project directory.
+ERROR 2017-03-26 08:02:04,712: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/status.py", line 762, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_WAJJ is not a valid CRAB project directory.
+DEBUG 2017-03-26 08:03:34,018: 	 Executing command: 'status'
+DEBUG 2017-03-26 08:03:34,019: 	 Found CRAB cache file /uscms/home/qhuang2/.crab3
+ERROR 2017-03-26 08:03:34,021: 	 Error: crab_ZA is not a valid CRAB project directory.
+ERROR 2017-03-26 08:03:34,021: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 257, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/status.py", line 762, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1703/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 566, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_ZA is not a valid CRAB project directory.
