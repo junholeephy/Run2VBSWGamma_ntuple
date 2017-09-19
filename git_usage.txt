@@ -1,3 +1,5 @@
+(0) Initializing a repository could be found on github web page when one create a new repository.
+
 (1)  vi .git/config	::   modify "url = https://github.com/junholeephy/Run2VBSWGamma_ntuple.git"  to  "url = https://junholeephy@github.com/junholeephy/Run2VBSWGamma_ntuple"
 
 (2) do what you need to do
@@ -9,5 +11,7 @@
 (5) git commit $DIR_YOU_HAVE_MODIFIED -m "comments.. e.g. modification of ~~"
 
 (6) git push origin master
+
+(7) "git pull" to update modification from other branch 
 
 
