@@ -4,8 +4,10 @@
 
 (3) git status -s
 
-(4) git commit $DIR_YOU_HAVE_MODIFIED -m "comments.. e.g. modification of ~~"
+(4) git add $DIR_YOU_HAVE_ADDED
 
-(5) git push origin master
+(5) git commit $DIR_YOU_HAVE_MODIFIED -m "comments.. e.g. modification of ~~"
+
+(6) git push origin master
 
 
