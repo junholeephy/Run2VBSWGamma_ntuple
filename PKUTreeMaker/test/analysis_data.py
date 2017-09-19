@@ -5,22 +5,22 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True),
 				     SkipEvent = cms.untracked.vstring('ProductNotFound'))
 corrJetsOnTheFly = True
 runOnMC = False
+chsorpuppi = True  # AK4Chs or AK4Puppi
 #****************************************************************************************************#
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 if runOnMC:
-   process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'#'80X_mcRun2_asymptotic_2016_miniAODv2'  #'76X_mcRun2_asymptotic_v12' # '74X_mcRun2_asymptotic_v2'#'for version2 miniaod 
+   process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
 elif not(runOnMC):
-   process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'#'80X_dataRun2_Prompt_v8' #'76X_dataRun2_v15' #'74X_dataRun2_reMiniAOD_v0' #'74X_dataRun2_Prompt_v4' # for 2015D prompt v4
-# 74X_dataRun2_reMiniAOD_v0 for D_05Oct2015
+   process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  #80X_dataRun2_2016SeptRepro_v4'
 
 ##########					                                                             
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
-hltFiltersProcessName = 'RECO'
+hltFiltersProcessName = 'PAT'  #'RECO'
 if runOnMC:
    hltFiltersProcessName = 'PAT' #'RECO'
-reducedConversionsName = 'RECO'
+reducedConversionsName = 'PAT'  #'RECO'
 if runOnMC:
    reducedConversionsName= 'PAT' #'RECO'
 
@@ -33,10 +33,15 @@ process.load("VAJets.PKUCommon.leptonicW_cff")
 # If Update
 process.goodMuons.src = "slimmedMuons"
 process.goodElectrons.src = "slimmedElectrons"
-process.goodAK4Jets.src = "slimmedJets"
 process.goodPhotons.src = "slimmedPhotons"
 process.Wtoenu.MET  = "slimmedMETs"
 process.Wtomunu.MET = "slimmedMETs"
+
+process.load("VAJets.PKUCommon.goodJets_cff") 
+if chsorpuppi:
+      process.goodAK4Jets.src = "slimmedJets"
+else:
+      process.goodAK4Jets.src = "slimmedJetsPuppi" 
 
 #process.goodOfflinePrimaryVertex = cms.EDFilter("VertexSelector",
 #                                       src = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -78,19 +83,34 @@ process.metfilterSequence = cms.Sequence(process.BadPFMuonFilter+process.BadChar
 #begin------------JEC on the fly--------
 if runOnMC:
    jecLevelsAK4chs = [
-          'Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt',
-          'Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt',
-          'Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt'
+          'Summer16_23Sep2016V3_MC_L1FastJet_AK4PFchs.txt',
+          'Summer16_23Sep2016V3_MC_L2Relative_AK4PFchs.txt',
+          'Summer16_23Sep2016V3_MC_L3Absolute_AK4PFchs.txt'
+    ]
+   jecLevelsAK4puppi = [
+          'Summer16_23Sep2016V3_MC_L1FastJet_AK4PFPuppi.txt',
+          'Summer16_23Sep2016V3_MC_L2Relative_AK4PFPuppi.txt',
+          'Summer16_23Sep2016V3_MC_L3Absolute_AK4PFPuppi.txt'
     ]
 else:
    jecLevelsAK4chs = [
-          'Spring16_25nsV6_DATA_L1FastJet_AK4PFchs.txt',
-          'Spring16_25nsV6_DATA_L2Relative_AK4PFchs.txt',
-          'Spring16_25nsV6_DATA_L3Absolute_AK4PFchs.txt',
-          'Spring16_25nsV6_DATA_L2L3Residual_AK4PFchs.txt'
+          'Summer16_23Sep2016BCDV3_DATA_L1FastJet_AK4PFchs.txt',
+          'Summer16_23Sep2016BCDV3_DATA_L2Relative_AK4PFchs.txt',
+          'Summer16_23Sep2016BCDV3_DATA_L3Absolute_AK4PFchs.txt',
+	  'Summer16_23Sep2016BCDV3_DATA_L2L3Residual_AK4PFchs.txt'
+    ]
+   jecLevelsAK4puppi = [
+          'Summer16_23Sep2016BCDV3_DATA_L1FastJet_AK4PFPuppi.txt',
+          'Summer16_23Sep2016BCDV3_DATA_L2Relative_AK4PFPuppi.txt',
+          'Summer16_23Sep2016BCDV3_DATA_L3Absolute_AK4PFPuppi.txt',
+	  'Summer16_23Sep2016BCDV3_DATA_L2L3Residual_AK4PFPuppi.txt'
     ]
 #end------------JEC on the fly--------
 
+if chsorpuppi:
+      ak4jecsrc = jecLevelsAK4chs
+else:
+      ak4jecsrc = jecLevelsAK4puppi
  
 process.load("RecoEgamma/PhotonIdentification/PhotonIDValueMapProducer_cfi")
    
@@ -111,22 +131,23 @@ process.treeDumper = cms.EDAnalyzer("PKUTreeMaker",
                                     photonSrc = cms.InputTag("slimmedPhotons"),
                                     genSrc =  cms.InputTag("prunedGenParticles"),  
                                     jecAK4chsPayloadNames = cms.vstring( jecLevelsAK4chs ),
+                                    jecAK4PayloadNames = cms.vstring( ak4jecsrc ),
                                     metSrc = cms.InputTag("slimmedMETs"),
                                     vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),  
                                     t1jetSrc = cms.InputTag("slimmedJets"),      
                                     t1muSrc = cms.InputTag("slimmedMuons"),       
-                                    electronIDs = cms.InputTag("cutBasedElectronID-Spring15-25ns-V1-standalone-medium"),
                                     looseelectronSrc = cms.InputTag("vetoElectrons"),
                                     electrons = cms.InputTag("slimmedElectrons"),
                                     conversions = cms.InputTag("reducedEgamma","reducedConversions",reducedConversionsName),
                                     beamSpot = cms.InputTag("offlineBeamSpot","","RECO"),
                                     loosemuonSrc = cms.InputTag("looseMuons"),
                                     hltToken    = cms.InputTag("TriggerResults","","HLT"),
-                                    elPaths1     = cms.vstring("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v3","HLT_Ele23_WPLoose_Gsf_v3","HLT_Ele23_WPLoose_Gsf_WHbbBoost_v2","HLT_Ele22_eta2p1_WPTight_Gsf_v3","HLT_Ele22_eta2p1_WPLoose_Gsf_v3"),#("HLT_Ele23_WPLoose_Gsf_v*", "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*"),#SMP-15-004
-                                    elPaths2     = cms.vstring("HLT_Ele27_eta2p1_WPTight_Gsf_v2","HLT_Ele27_eta2p1_WPLoose_Gsf_v2","HLT_Ele27_WPLoose_Gsf_WHbbBoost_v2"),#"HLT_Ele27_eta2p1_WP75_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v*"), #B2G-15-005
+                                    elPaths1     = cms.vstring("HLT_Ele23_WPTight_Gsf_v*"),
+                                    elPaths2     = cms.vstring("HLT_Ele27_WPTight_Gsf_v*"),
                                     muPaths1     = cms.vstring("HLT_IsoMu20_v*","HLT_IsoTkMu20_v*"),#"HLT_IsoMu*","HLT_IsoTkMu*"),#("HLT_IsoMu20_v*"),#SMP-15-004
                                     muPaths2     = cms.vstring("HLT_IsoTkMu22_v*","HLT_IsoMu22_v*"),#"HLT_IsoMu20_v*","HLT_IsoTkMu20_v*"), #B2G-15-005
-                                    muPaths3     = cms.vstring("HLT_IsoMu27_v*","HLT_IsoTkMu27_v*"),#"HLT_IsoMu27_v*"), #B2G-15-005
+#                                    muPaths3     = cms.vstring("HLT_IsoMu24_v*","HLT_IsoTkMu24_v*"),#"HLT_IsoMu27_v*"), #B2G-15-005
+                                    muPaths3     = cms.vstring("HLT_IsoMu27_v*","HLT_IsoTkMu27_v*"),
 				    noiseFilter = cms.InputTag('TriggerResults','', hltFiltersProcessName),
 				    noiseFilterSelection_HBHENoiseFilter = cms.string('Flag_HBHENoiseFilter'),
                                     noiseFilterSelection_HBHENoiseIsoFilter = cms.string("Flag_HBHENoiseIsoFilter"),
@@ -158,8 +179,7 @@ process.analysis = cms.Path(
 ### Source
 process.load("VAJets.PKUCommon.data.RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8")
 process.source.fileNames = [
-#"/store/mc/RunIISpring16MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/AC273334-D926-E611-B7EF-A0369F7FC688.root"
-"/store/data/Run2016D/SingleMuon/MINIAOD/PromptReco-v2/000/276/794/00000/6ED964E0-EE4B-E611-BFFE-02163E0137FC.root"
+'/store/data/Run2016D/SingleMuon/MINIAOD/23Sep2016-v1/60000/7E24A014-6E9D-E611-B984-F04DA2752644.root'
 ]
                        
 process.maxEvents.input =50000
