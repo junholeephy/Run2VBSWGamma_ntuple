@@ -1222,8 +1222,8 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 photon_mva[ip]=(tp4+fwp4).M();
                }
 
-            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()>0 && (*photons)[ip].hadTowOverEm()<0.0396 && photon_sieie[ip]<0.01022 && chiso<0.441 && nhiso<(2.725 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(2.571+0.0047*(*photons)[ip].pt()) && photon_sieie[ip]>0 && chiso>0 && nhiso>0 && phoiso>0) {ismedium_photon=1;}  //
-            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()>0 && (*photons)[ip].hadTowOverEm()<0.0219 && photon_sieie[ip]<0.03001 && chiso<0.442 && nhiso<(1.715 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(3.863+0.0034*(*photons)[ip].pt()) && photon_sieie[ip]>0 && chiso>0 && nhiso>0 && phoiso>0) {ismedium_photon=1;}  //
+            if(passEleVetonew && (*photons)[ip].isEB() && /*(*photons)[ip].hadTowOverEm()>0 &&*/ (*photons)[ip].hadTowOverEm()<0.0396 && photon_sieie[ip]<0.01022 && chiso<0.441 && nhiso<(2.725 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(2.571+0.0047*(*photons)[ip].pt()) /*&& photon_sieie[ip]>0 && chiso>0 && nhiso>0 && phoiso>0*/) {ismedium_photon=1;}  //
+            if(passEleVetonew && (*photons)[ip].isEE() && /*(*photons)[ip].hadTowOverEm()>0 &&*/ (*photons)[ip].hadTowOverEm()<0.0219 && photon_sieie[ip]<0.03001 && chiso<0.442 && nhiso<(1.715 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(3.863+0.0034*(*photons)[ip].pt()) /*&& photon_sieie[ip]>0 && chiso>0 && nhiso>0 && phoiso>0*/) {ismedium_photon=1;}  //
 
              if(ismedium_photon==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) { if(ip==0) {photonet=(*photons)[ip].pt(); iphoton=ip;}
                  if((*photons)[ip].pt()>photonet) {photonet=(*photons)[ip].pt(); iphoton=ip;}
