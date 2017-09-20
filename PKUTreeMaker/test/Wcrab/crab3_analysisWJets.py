@@ -24,7 +24,7 @@ config.Data.publication = False
 config.Data.outputDatasetTag = 'WJets-2'
 
 config.section_("Site")
-config.Site.storageSite = 'T3_US_FNALLPC'  #2_CH_CERN'
-
+#config.Site.storageSite = 'T3_US_FNALLPC'  #2_CH_CERN'
+config.Site.storageSite = 'T2_CH_CERN'
 
 

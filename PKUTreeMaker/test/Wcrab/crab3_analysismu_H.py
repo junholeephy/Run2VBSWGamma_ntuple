@@ -26,7 +26,6 @@ config.Data.outputDatasetTag = 'SMu16H-v1'
 #config.Data.outputDatasetTag = 'SMu16H-v2'
 
 config.section_("Site")
-config.Site.storageSite = 'T3_US_FNALLPC'  #2_CH_CERN'
-
+config.Site.storageSite = 'T2_CH_CERN'
 
 
