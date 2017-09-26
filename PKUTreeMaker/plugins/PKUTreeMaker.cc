@@ -1225,8 +1225,11 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.0396 && photon_sieie[ip]<0.01022 && chiso<0.441 && nhiso<(2.725 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(2.571+0.0047*(*photons)[ip].pt())) {ismedium_photon=1;}
             if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.0219 && photon_sieie[ip]<0.03001 && chiso<0.442 && nhiso<(1.715 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(3.863+0.0034*(*photons)[ip].pt())) {ismedium_photon=1;}
 
-             if(ismedium_photon==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) { if(ip==0) {photonet=(*photons)[ip].pt(); iphoton=ip;}
-                 if((*photons)[ip].pt()>photonet)
+             if(ismedium_photon==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) 
+		{ 
+		if(ip==0) {photonet=(*photons)[ip].pt(); iphoton=ip;}
+//                std::cout<<"photonet = "<<photonet<<std::endl;
+		 if((*photons)[ip].pt()>photonet)
                          {
                       photonet=(*photons)[ip].pt(); iphoton=ip;
 
@@ -1235,8 +1238,8 @@ PKUTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          
 //////////////////////////////////for fake photon study, store photon without sieie cut
 //Inverting loose ID
-            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.0597 && chiso<15 && nhiso<std::min(0.2*(*photons)[ip].pt(), 5.*(10.910 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())))  && phoiso<std::min(0.2*(*photons)[ip].pt(), 5.*(3.630+0.0047*(*photons)[ip].pt())) && !(photon_sieie[ip]<0.01031 && chiso<3) /*&& nhiso>0 && phoiso>0*/) {ismedium_photon_f=1;}  // && nhiso<(10.910 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(3.630+0.0047*(*photons)[ip].pt())
-            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.0481 && chiso<15 && nhiso<std::min(0.2*(*photons)[ip].pt(), 5.*(5.931 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())))  && phoiso<std::min(0.2*(*photons)[ip].pt(), 5.*(6.641+0.0034*(*photons)[ip].pt())) && !(photon_sieie[ip]<0.03013 && chiso<3) /*&& nhiso>0 && phoiso>0*/) {ismedium_photon_f=1;}  // && nhiso<(5.931 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(6.641+0.0034*(*photons)[ip].pt())
+            if(passEleVetonew && (*photons)[ip].isEB() && (*photons)[ip].hadTowOverEm()<0.0597 && chiso<15 && nhiso<(10.910 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt()))  && phoiso<(3.630+0.0047*(*photons)[ip].pt()) && (photon_sieie[ip]>=0.01031 || chiso>=3) /*&& nhiso>0 && phoiso>0*/) {ismedium_photon_f=1;}  // && nhiso<(10.910 + (0.0148*(*photons)[ip].pt()+0.000017*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(3.630+0.0047*(*photons)[ip].pt())
+            if(passEleVetonew && (*photons)[ip].isEE() && (*photons)[ip].hadTowOverEm()<0.0481 && chiso<15 && nhiso<(5.931 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt()))  && phoiso<(6.641+0.0034*(*photons)[ip].pt()) && (photon_sieie[ip]>=0.03013 || chiso>=3) /*&& nhiso>0 && phoiso>0*/) {ismedium_photon_f=1;}  // && nhiso<(5.931 + (0.0163*(*photons)[ip].pt()+0.000014*(*photons)[ip].pt()*(*photons)[ip].pt())) && phoiso<(6.641+0.0034*(*photons)[ip].pt())
             if(ismedium_photon_f==1 && deltaR(phosc_eta,phosc_phi,etalep1,philep1) > 0.7) 
 		{
                 if(ip==0) {photonet_f=(*photons)[ip].pt(); iphoton_f=ip;}
